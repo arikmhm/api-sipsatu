@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  Pending
+  Completed
+  Cancelled
+}
+
+model Role {
+  id_role   Int    @id @default(autoincrement())
+  nama_role String @db.VarChar(255)
+  users     User[]
+
+  @@map("role")
+}
+
+model User {
+  id_user       Int       @id @default(autoincrement())
+  phone         String    @unique @db.VarChar(255)
+  password      String    @db.VarChar(255)
+  token         String?   @db.VarChar(255)
+  id_role       Int
+  created_at    DateTime  @default(now()) @db.DateTime
+  updated_at    DateTime  @updatedAt @db.DateTime
+  bank_sampah   BankSampah? @relation("userBanksampah")
+  nasabah       Nasabah?
+  sampah        Sampah[]
+  produk        Produk[]
+  penjualan     Penjualan[]
+  pembelian     Pembelian[]
+  role          Role      @relation(fields: [id_role], references: [id_role])
+
+  @@map("user")
+}
+
+model BankSampah {
+  id_bank_sampah Int       @id @default(autoincrement())
+  id_user        Int      @unique
+  nama           String   @db.VarChar(255)
+  alamat         String   @db.VarChar(255)
+  phone          String?  @db.VarChar(20)
+  created_at     DateTime @default(now()) @db.DateTime
+  updated_at     DateTime @updatedAt @db.DateTime
+  user           User     @relation("userBanksampah", fields: [id_user], references: [id_user])
+  nasabah        Nasabah[]
+  sampah         Sampah[]
+
+  @@map("bank_sampah")
+}
+
+model Nasabah {
+  id_nasabah        Int       @id @default(autoincrement())
+  id_user           Int      @unique
+  nama              String   @db.VarChar(255)
+  phone             String?  @db.VarChar(20)
+  alamat            String   @db.VarChar(255)
+  id_bank_sampah    Int
+  created_at        DateTime @default(now()) @db.DateTime
+  updated_at        DateTime @updatedAt @db.DateTime
+  user             User     @relation(fields: [id_user], references: [id_user])
+  bank_sampah      BankSampah @relation(fields: [id_bank_sampah], references: [id_bank_sampah])
+  pembelian        Pembelian[]
+
+  @@map("nasabah")
+}
+
+model Mitra {
+  id_mitra Int       @id @default(autoincrement())
+  nama     String    @db.VarChar(255)
+  alamat   String    @db.VarChar(255)
+  no_telpon String?  @db.VarChar(20)
+  penjualan Penjualan[]
+
+  @@map("mitra")
+}
+
+model Sampah {
+  id_sampah      Int       @id @default(autoincrement())
+  kategori_sampah String   @db.VarChar(255)
+  satuan_sampah  String   @db.VarChar(50)
+  harga          Float
+  tanggal_insert DateTime @default(now()) @db.DateTime
+  tanggal_update DateTime @updatedAt @db.DateTime
+  id_bank_sampah Int
+  id_user        Int
+  bank_sampah    BankSampah @relation(fields: [id_bank_sampah], references: [id_bank_sampah])
+  user           User     @relation(fields: [id_user], references: [id_user])
+  detail_penjualan DetailPenjualan[]
+  detail_pembelian DetailPembelian[]
+
+  @@map("sampah")
+}
+
+model Produk {
+  id_produk       Int       @id @default(autoincrement())
+  nama_produk     String    @db.VarChar(255)
+  gambar          String?   @db.VarChar(255)
+  harga           Float
+  tanggal_insert  DateTime  @default(now()) @db.DateTime
+  tanggal_update  DateTime  @updatedAt @db.DateTime
+  id_user         Int
+  user            User      @relation(fields: [id_user], references: [id_user])
+
+  @@map("produk")
+}
+
+model Penjualan {
+  id_penjualan Int       @id @default(autoincrement())
+  id_mitra     Int
+  id_user      Int
+  tanggal      DateTime @default(now()) @db.DateTime
+  total        Float
+  keterangan   String   @db.VarChar(255)
+  status       Status   @default(Pending) // Tambahkan kolom status
+  created_at   DateTime @default(now()) @db.DateTime
+  updated_at   DateTime @updatedAt @db.DateTime
+  mitra        Mitra     @relation(fields: [id_mitra], references: [id_mitra])
+  user         User      @relation(fields: [id_user], references: [id_user])
+  detail_penjualan DetailPenjualan[]
+
+  @@map("penjualan")
+}
+
+model Pembelian {
+  id_pembelian Int       @id @default(autoincrement())
+  id_nasabah   Int
+  id_user      Int
+  tanggal      DateTime @default(now()) @db.DateTime
+  total        Float
+  keterangan   String   @db.VarChar(255)
+  status       Status   @default(Pending) // Tambahkan kolom status
+  created_at   DateTime @default(now()) @db.DateTime
+  updated_at   DateTime @updatedAt @db.DateTime
+  nasabah      Nasabah   @relation(fields: [id_nasabah], references: [id_nasabah])
+  user         User      @relation(fields: [id_user], references: [id_user])
+  detail_pembelian DetailPembelian[]
+
+  @@map("pembelian")
+}
+
+model DetailPenjualan {
+  id_detail_penjualan Int     @id @default(autoincrement())
+  id_penjualan        Int
+  id_sampah           Int
+  berat               Float
+  subtotal            Float
+  penjualan           Penjualan @relation(fields: [id_penjualan], references: [id_penjualan])
+  sampah              Sampah    @relation(fields: [id_sampah], references: [id_sampah])
+
+  @@map("detail_penjualan")
+}
+
+model DetailPembelian {
+  id_detail_pembelian Int     @id @default(autoincrement())
+  id_pembelian        Int
+  id_sampah           Int
+  berat               Float
+  subtotal            Float
+  pembelian           Pembelian @relation(fields: [id_pembelian], references: [id_pembelian])
+  sampah              Sampah    @relation(fields: [id_sampah], references: [id_sampah])
+
+  @@map("detail_pembelian")
+}

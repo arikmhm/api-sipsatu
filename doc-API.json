@@ -1,0 +1,1322 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Bank Sampah API",
+    "version": "1.0.0",
+    "description": "API untuk mengelola user, nasabah, bank sampah, dan transaksi pembelian."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/api/register": {
+      "post": {
+        "summary": "Register new user (nasabah)",
+        "description": "Mendaftarkan pengguna baru sebagai nasabah. Pengguna perlu menyediakan informasi dasar seperti nomor telepon, password, nama, alamat, dan ID bank sampah terkait.",
+        "tags": ["User"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterUser"
+              },
+              "example": {
+                "phone": "08123456789",
+                "password": "password123",
+                "nama": "John Doe",
+                "alamat": "Jl. Merdeka No. 123",
+                "id_bank_sampah": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 201,
+                  "message": "User registered successfully",
+                  "data": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 400,
+                  "message": "User already exists",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Endpoint ini memungkinkan nasabah untuk login ke dalam sistem dengan menggunakan nomor telepon dan password yang telah terdaftar.",
+        "tags": ["User"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginUser"
+              },
+              "example": {
+                "phone": "08123456789",
+                "password": "password123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginSuccessResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Login successful",
+                  "data": {
+                    "token": "uuid-token-string",
+                    "id_role": 1
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Username / Password wrong",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 401,
+                  "message": "Username / Password wrong",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/nasabah/search": {
+      "get": {
+        "summary": "Search nasabah by name and bank sampah",
+        "description": "Mencari nasabah berdasarkan nama dan ID bank sampah. Nama bersifat opsional, namun ID bank sampah wajib.",
+        "tags": ["Nasabah"],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Nama nasabah yang akan dicari",
+            "example": "John"
+          },
+          {
+            "name": "id_bank_sampah",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID bank sampah terkait untuk pencarian nasabah",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nasabah search successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Nasabah search successful",
+                  "data": [
+                    {
+                      "id_nasabah": 1,
+                      "nama": "John Doe"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parameter id_bank_sampah is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 400,
+                  "message": "Parameter id_bank_sampah is required",
+                  "data": null
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nasabah not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Nasabah not found",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/nasabah/current": {
+      "get": {
+        "summary": "Get current logged-in nasabah",
+        "description": "Mengembalikan informasi nasabah yang sedang login berdasarkan token autentikasi yang disediakan.",
+        "tags": ["Nasabah"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nasabah retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Nasabah retrieved successfully",
+                  "data": {
+                    "id_user": 1,
+                    "phone": "08123456789",
+                    "id_nasabah": 10,
+                    "nama": "John Doe",
+                    "id_bank_sampah": 3,
+                    "nama_bankSampah": "mawar merah"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nasabah not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Nasabah not found",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bank-sampah/current": {
+      "get": {
+        "summary": "Get current logged-in bank sampah",
+        "description": "Mengembalikan informasi bank sampah yang sedang login berdasarkan token autentikasi yang disediakan.",
+        "tags": ["Bank Sampah"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bank Sampah retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Bank Sampah retrieved successfully",
+                  "data": {
+                    "id_user": 2,
+                    "phone": "081298765432",
+                    "id_bank_sampah": 1,
+                    "nama": "Bank Sampah Induk"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bank Sampah not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Bank Sampah not found",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/nasabah/{id_nasabah}/pembelian/completed": {
+      "get": {
+        "summary": "Get list of completed pembelian by nasabah",
+        "description": "Mengambil daftar pembelian yang sudah selesai berdasarkan ID nasabah. Daftar ini akan menampilkan transaksi yang statusnya 'Completed'.",
+        "tags": ["Pembelian"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_nasabah",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the nasabah",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pembelian list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Pembelian list retrieved successfully",
+                  "data": [
+                    {
+                      "id_pembelian": 1,
+                      "tanggal": "2024-08-26T14:30:00Z",
+                      "total": 100000,
+                      "keterangan": "Pembelian bulan Agustus"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nasabah not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Nasabah not found",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/nasabah/{id_nasabah}/pembelian/completed/total": {
+      "get": {
+        "summary": "Get total amount of completed pembelian by nasabah",
+        "description": "Mengambil total jumlah pembelian yang sudah selesai untuk nasabah tertentu berdasarkan ID nasabah.",
+        "tags": ["Pembelian"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_nasabah",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the nasabah",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Total pembelian retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Total pembelian retrieved successfully",
+                  "data": {
+                    "total": 100000
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nasabah not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Nasabah not found",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pembelian": {
+      "post": {
+        "summary": "Create new pembelian",
+        "description": "Membuat transaksi pembelian baru oleh nasabah. Memerlukan ID nasabah dan keterangan transaksi.",
+        "tags": ["Pembelian"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePembelian"
+              },
+              "example": {
+                "id_nasabah": 10,
+                "keterangan": "Pembelian sampah anorganik"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pembelian created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 201,
+                  "message": "Pembelian created successfully",
+                  "data": {
+                    "id_pembelian": 101
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nasabah not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Nasabah not found",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pembelian/{id_pembelian}/details": {
+      "post": {
+        "summary": "Add details to an existing pembelian",
+        "description": "Menambahkan item detail ke transaksi pembelian yang sudah ada. Detail item termasuk ID sampah dan berat.",
+        "tags": ["Pembelian"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_pembelian",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the pembelian to add details",
+            "example": 101
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDetailPembelian"
+              },
+              "example": {
+                "id_sampah": 5,
+                "berat": 10.5
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detail pembelian added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Detail pembelian added successfully",
+                  "data": {
+                    "id_pembelian": 101
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sampah or Pembelian not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Sampah or Pembelian not found",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get details of a specific pembelian",
+        "description": "Mengambil detail dari transaksi pembelian tertentu berdasarkan ID pembelian. Termasuk informasi nasabah, bank sampah, dan item pembelian.",
+        "tags": ["Pembelian"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_pembelian",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the pembelian to get details",
+            "example": 101
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pembelian details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PembelianDetailResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Pembelian details retrieved successfully",
+                  "data": {
+                    "id_pembelian": 101,
+                    "id_nasabah": 10,
+                    "nama_nasabah": "John Doe",
+                    "nama_bankSampah": "Bank Sampah Induk",
+                    "tanggal": "2024-08-26T08:40:00Z",
+                    "total": 150.75,
+                    "keterangan": "Pembelian sampah plastik",
+                    "detail_pembelian": [
+                      {
+                        "id_detail_pembelian": 501,
+                        "id_sampah": 5,
+                        "kategori_sampah": "Plastik",
+                        "berat": 10.5,
+                        "subtotal": 105.0,
+                        "harga": 10.0,
+                        "satuan_sampah": "kg"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pembelian not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Pembelian not found",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pembelian/{id_pembelian}/complete": {
+      "post": {
+        "summary": "Complete an existing pembelian",
+        "description": "Menandai transaksi pembelian sebagai selesai. Memerlukan ID pembelian untuk mengidentifikasi transaksi.",
+        "tags": ["Pembelian"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_pembelian",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the pembelian to complete",
+            "example": 101
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pembelian completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletePembelianResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Pembelian completed successfully",
+                  "data": {
+                    "id_pembelian": 101,
+                    "status": "Completed"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pembelian not found or not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Pembelian not found or not authorized",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sampah/create": {
+      "post": {
+        "summary": "Create new sampah",
+        "description": "Menambahkan jenis sampah baru dalam sistem. Pengguna perlu menyertakan kategori sampah, satuan, dan harga per satuan.",
+        "tags": ["Sampah"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSampah"
+              },
+              "example": {
+                "kategori_sampah": "Plastik",
+                "satuan_sampah": "kg",
+                "harga": 5000
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sampah created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 201,
+                  "message": "Sampah created successfully",
+                  "data": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bank Sampah not associated with the user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 400,
+                  "message": "Bank Sampah not associated with the user",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sampah/list": {
+      "get": {
+        "summary": "Get list of sampah by bank sampah",
+        "description": "Mengambil daftar sampah yang terkait dengan bank sampah tertentu.",
+        "tags": ["Sampah"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sampah list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Sampah list retrieved successfully",
+                  "data": [
+                    {
+                      "id_sampah": 1,
+                      "kategori_sampah": "Plastik",
+                      "satuan_sampah": "kg",
+                      "harga": 5000
+                    },
+                    {
+                      "id_sampah": 2,
+                      "kategori_sampah": "Kertas",
+                      "satuan_sampah": "kg",
+                      "harga": 3000
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No associated Bank Sampah found for this user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "No associated Bank Sampah found for this user",
+                  "data": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "status": 500,
+                  "message": "Internal server error",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RegisterUser": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "08123456789",
+            "description": "Nomor telepon nasabah yang akan didaftarkan."
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "Kata sandi untuk akun nasabah."
+          },
+          "id_role": {
+            "type": "integer",
+            "default": 1,
+            "example": 1,
+            "description": "ID peran pengguna. Default adalah 1 untuk nasabah."
+          },
+          "nama": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "Nama lengkap nasabah."
+          },
+          "alamat": {
+            "type": "string",
+            "example": "Jl. Merdeka No. 123",
+            "description": "Alamat tempat tinggal nasabah."
+          },
+          "id_bank_sampah": {
+            "type": "integer",
+            "example": 1,
+            "description": "ID bank sampah yang terkait dengan nasabah."
+          }
+        },
+        "required": ["phone", "password", "nama", "alamat", "id_bank_sampah"]
+      },
+      "LoginUser": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "08123456789",
+            "description": "Nomor telepon pengguna yang terdaftar."
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "Kata sandi untuk akun pengguna."
+          }
+        },
+        "required": ["phone", "password"]
+      },
+      "CreatePembelian": {
+        "type": "object",
+        "properties": {
+          "id_nasabah": {
+            "type": "integer",
+            "example": 1,
+            "description": "ID nasabah yang melakukan pembelian."
+          },
+          "keterangan": {
+            "type": "string",
+            "example": "Pembelian pertama",
+            "description": "Deskripsi singkat mengenai transaksi pembelian."
+          }
+        },
+        "required": ["id_nasabah"]
+      },
+      "AddDetailPembelian": {
+        "type": "object",
+        "properties": {
+          "id_sampah": {
+            "type": "integer",
+            "example": 1,
+            "description": "ID sampah yang akan ditambahkan ke pembelian."
+          },
+          "berat": {
+            "type": "number",
+            "example": 2.5,
+            "description": "Berat sampah yang dibeli dalam satuan kilogram."
+          }
+        },
+        "required": ["id_sampah", "berat"]
+      },
+      "CreateSampah": {
+        "type": "object",
+        "properties": {
+          "kategori_sampah": {
+            "type": "string",
+            "example": "Plastik",
+            "description": "Kategori jenis sampah yang akan ditambahkan."
+          },
+          "satuan_sampah": {
+            "type": "string",
+            "example": "kg",
+            "description": "Satuan berat untuk jenis sampah, misalnya kilogram (kg)."
+          },
+          "harga": {
+            "type": "number",
+            "example": 5000,
+            "description": "Harga per satuan berat untuk sampah."
+          }
+        },
+        "required": ["kategori_sampah", "satuan_sampah", "harga"]
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 200,
+            "description": "Kode status HTTP yang menunjukkan kesuksesan."
+          },
+          "message": {
+            "type": "string",
+            "example": "Operation successful",
+            "description": "Pesan yang menjelaskan hasil operasi."
+          },
+          "data": {
+            "type": "object",
+            "description": "Objek yang berisi data hasil operasi.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400,
+            "description": "Kode status HTTP yang menunjukkan kesalahan."
+          },
+          "message": {
+            "type": "string",
+            "example": "Error message",
+            "description": "Pesan yang menjelaskan jenis kesalahan."
+          },
+          "data": {
+            "type": "object",
+            "description": "Objek data tambahan yang relevan dengan kesalahan.",
+            "nullable": true
+          }
+        }
+      },
+      "LoginSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 200,
+            "description": "Kode status HTTP yang menunjukkan kesuksesan."
+          },
+          "message": {
+            "type": "string",
+            "example": "Login successful",
+            "description": "Pesan yang menunjukkan login berhasil."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "token": {
+                "type": "string",
+                "example": "uuid-token-string",
+                "description": "Token autentikasi yang digunakan untuk akses API."
+              },
+              "id_role": {
+                "type": "integer",
+                "example": 1,
+                "description": "ID peran pengguna yang login."
+              }
+            }
+          }
+        }
+      },
+      "CompletePembelianResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 200,
+            "description": "Kode status HTTP yang menunjukkan kesuksesan."
+          },
+          "message": {
+            "type": "string",
+            "example": "Pembelian completed successfully",
+            "description": "Pesan yang menunjukkan pembelian telah diselesaikan."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id_pembelian": {
+                "type": "integer",
+                "example": 101,
+                "description": "ID transaksi pembelian yang selesai."
+              },
+              "status": {
+                "type": "string",
+                "example": "Completed",
+                "description": "Status transaksi pembelian."
+              }
+            }
+          }
+        }
+      },
+      "PembelianDetailResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 200,
+            "description": "Kode status HTTP yang menunjukkan kesuksesan."
+          },
+          "message": {
+            "type": "string",
+            "example": "Pembelian details retrieved successfully",
+            "description": "Pesan yang menunjukkan detail pembelian berhasil diambil."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id_pembelian": {
+                "type": "integer",
+                "example": 101,
+                "description": "ID transaksi pembelian."
+              },
+              "id_nasabah": {
+                "type": "integer",
+                "example": 10,
+                "description": "ID nasabah yang melakukan pembelian."
+              },
+              "nama_nasabah": {
+                "type": "string",
+                "example": "John Doe",
+                "description": "Nama nasabah yang melakukan pembelian."
+              },
+              "nama_bankSampah": {
+                "type": "string",
+                "example": "Bank Sampah Induk",
+                "description": "Nama bank sampah yang terkait dengan pembelian."
+              },
+              "tanggal": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2024-08-26T08:40:00Z",
+                "description": "Tanggal dan waktu pembelian."
+              },
+              "total": {
+                "type": "number",
+                "example": 150.75,
+                "description": "Total harga pembelian."
+              },
+              "keterangan": {
+                "type": "string",
+                "example": "Pembelian sampah plastik",
+                "description": "Keterangan atau deskripsi singkat tentang pembelian."
+              },
+              "detail_pembelian": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id_detail_pembelian": {
+                      "type": "integer",
+                      "example": 501,
+                      "description": "ID detail pembelian."
+                    },
+                    "id_sampah": {
+                      "type": "integer",
+                      "example": 5,
+                      "description": "ID sampah yang dibeli."
+                    },
+                    "kategori_sampah": {
+                      "type": "string",
+                      "example": "Plastik",
+                      "description": "Kategori sampah yang dibeli."
+                    },
+                    "berat": {
+                      "type": "number",
+                      "example": 10.5,
+                      "description": "Berat sampah yang dibeli dalam kilogram."
+                    },
+                    "subtotal": {
+                      "type": "number",
+                      "example": 105.0,
+                      "description": "Subtotal harga untuk sampah yang dibeli."
+                    },
+                    "harga": {
+                      "type": "number",
+                      "example": 10.0,
+                      "description": "Harga per kilogram sampah."
+                    },
+                    "satuan_sampah": {
+                      "type": "string",
+                      "example": "kg",
+                      "description": "Satuan berat untuk sampah yang dibeli."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Gunakan token autentikasi Bearer untuk mengakses endpoint yang memerlukan autentikasi."
+      }
+    }
+  }
+}
