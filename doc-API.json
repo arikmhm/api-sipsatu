@@ -3,7 +3,7 @@
   "info": {
     "title": "Bank Sampah API",
     "version": "1.0.0",
-    "description": "API untuk mengelola user, nasabah, bank sampah, dan transaksi pembelian."
+    "description": "API untuk mengelola user, nasabah, bank sampah"
   },
   "servers": [
     {
